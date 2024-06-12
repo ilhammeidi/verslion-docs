@@ -118,14 +118,14 @@
                         <h1 class="title">Thank you for Purchasing </h1>
                         <br /><br />
                         <h3>Awrora - Digital Business Website React Template</h3>
-                        <h4>Version 1.0.0</h4>
+                        <h4>Version 3.1.0</h4>
                         <hr />
                         <ul>
                             <li>
                                 Created : 8 Sept 2023
                             </li>
                             <li>
-                                Latest Update : 8 Sept 2023
+                                Latest Update : 12 Jun 2024
                             </li>
                         </ul>
                     </div>
@@ -341,7 +341,7 @@ In order to test the app, install the following <a target="_blank" rel="noopener
 <code class="language-js">serve -p 1234</code>
                         </pre>
                         <p>
-                          Now you can access your static app in http://localhost:8080. Everything should be working as usual.
+                          Now you can access your static app from http://localhost:1234.
                         </p>
                     </div>
                 </section>
@@ -355,64 +355,81 @@ In order to test the app, install the following <a target="_blank" rel="noopener
                         <hr />
                         <h4>Deploy to server</h4>
                         <ul>
-                          <li>First you have to clone/copy the project in your hosting/cloud server.</li>
-                          <li>If you haven't install the dependencies before, please run <code>npm install</code></li>
-                          <li>Then run <code>npm run build</code></li>
                           <li>
-                            <strong>Run app in background process</strong>
-                            <p>
-                              To run it in background you may try PM2 <a href="pm2.keymetrics.io">pm2.keymetrics.io</a> and <a href="https://www.npmjs.com/package/pm2" target="_blank">https://www.npmjs.com/package/pm2</a>.
-                              PM2 is a daemon process manager that will help you manage and keep your application online 24/7
-                            </p>
+                            <strong>Option 1: Deploy as Static HTML</strong>
                             <ul>
+                              <li>Run <code>npm run build</code></li>
+                              <li>Then you can see the exported HTML content on a directory called <code>out/</code> inside your project.</li>
+                              <li>That's a fully functioning static web app. You can deploy/copy it to your hosting service and access it from your domain or IP</li>
+                            </ul>
+                          </li>
+                          <li>
+                            <strong>Option 2: Use Node.js Server</strong>
+                            <ul>
+                              <li>First you have to clone/copy the project in your hosting/cloud server.</li>
+                              <li>If you haven't install the dependencies before, please run <code>npm install</code></li>
+                              <li>Open <code>next.config.js</code> And Please remove/comment <code>output: 'export'</code></li>
+                              <li>Run <code>npm run build</code></li>
                               <li>
-                                Install the pm2 globally
-                                <pre><code class="language-js">npm install pm2@latest -g</code></pre>
-                              </li>
-                              <li>
-                                Go to project folder
-                              </li>
-                              <li>
-                                Create ecosystem file
-                                <pre><code class="language-js">pm2 ecosystem</code></pre>
-                                It will generate <code>ecosystem.config.js</code> in your root project
-                              </li>
-                              <li>
-                                Open <code>ecosystem.config.js</code>.
-                                Then Change the script target to <code>./index.js</code> like this:
-                                <pre>
-                                  <code class="language-js">
-module.exports = {
-  apps : [{
-    name      : 'awrora-react', // Your project name
-    script    : './index.js', // Change the script target to <code>./index.js</code>
-    env: {
-      NODE_ENV: 'development'
-    },
-    env_production : {
-      NODE_ENV: 'production'
-    }
-  }],
+                                <strong>Run app in background process</strong>
+                                <p>
+                                  To run it in background you may try PM2 <a href="pm2.keymetrics.io">pm2.keymetrics.io</a> and <a href="https://www.npmjs.com/package/pm2" target="_blank">https://www.npmjs.com/package/pm2</a>.
+                                  PM2 is a daemon process manager that will help you manage and keep your application online 24/7
+                                </p>
+                                <ul>
+                                  <li>
+                                    Install the pm2 globally
+                                    <pre><code class="language-js">npm install pm2@latest -g</code></pre>
+                                  </li>
+                                  <li>
+                                    Go to project folder i.e <code>packages/agency</code>
+                                  </li>
+                                  <li>
+                                    Create ecosystem file
+                                    <pre><code class="language-js">pm2 ecosystem</code></pre>
+                                    It will generate <code>ecosystem.config.js</code> in your root project
+                                  </li>
+                                  <li>
+                                    Open <code>ecosystem.config.js</code>.
+                                    Then Change the script target to <code>./node_modules/next/dist/bin/next</code> like this:
+                                    <pre>
+                                      <code class="language-js">
+    module.exports = {
+      apps : [{
+        name      : 'awrora-react', // Your project name
+        exec_mode: 'cluster',
+        instances: 'max', // Or a number of instances
+        script    : './node_modules/next/dist/bin/next',
+        args: 'start',
+        env: {
+          NODE_ENV: 'development'
+        },
+        env_production : {
+          NODE_ENV: 'production'
+        }
+      }],
 
-  deploy : {
-    production : {
-      user : 'node',
-      host : '212.83.163.1',
-      ref  : 'origin/master',
-      repo : 'git@github.com:repo.git',
-      path : '/var/www/production',
-      'post-deploy' : 'npm install && pm2 reload ecosystem.config.js --env production'
-    }
-  }
-};
-                                  </code>
-                                </pre>
+      deploy : {
+        production : {
+          user : 'node',
+          host : '212.83.163.1',
+          ref  : 'origin/master',
+          repo : 'git@github.com:repo.git',
+          path : '/var/www/production',
+          'post-deploy' : 'npm install && pm2 reload ecosystem.config.js --env production'
+        }
+      }
+    };
+                                      </code>
+                                    </pre>
+                                  </li>
+                                  <li>
+                                    Run the project
+                                    <pre><code class="language-js">pm2 start ecosystem.config.js --env production</code></pre>
+                                  </li>
+                                  <li>Please setup the proxy like nginx, apache, etc if necessary, then navigate to <a href="#" target="_blank">yourdomain.com</a></li>
+                                </ul>
                               </li>
-                              <li>
-                                Run the project
-                                <pre><code class="language-js">pm2 start ecosystem.config.js --env production</code></pre>
-                              </li>
-                              <li>Then navigate to <a href="http://localhost:3001" target="_blank">http://localhost:3001</a></li>
                             </ul>
                           </li>
                         </ul>
@@ -422,9 +439,10 @@ module.exports = {
                         <h4>Deploy to Vercel</h4>
                         <p>Deploy your website quickly, without having to manually configure DNS, SSL, CDN or hosting. Integrate with your favorite tools, and bring your entire team of developers and designers closer together.</p>
                         <ul>
-                          <li>Install vercel cli globally <code>npm i -g vercel</code></li>
-                          <li>Go to your projects, then <code>vercel deploy</code>.
-                          <li>Next just choose the configuration and continue</li>
+                          <li>Go to your projects, then <code>npm run build</code>. The static HTML will be generated in <code>out/</code> folder</li>
+                          <li>Next in console go to out/ folder with <code>cd out</code> command </li>
+                          <li>Then just run <code>vercel</code> to delploy.</li>
+                          <li>Choose some vercel optional config, like scope, project name, etc. Or you can just hit enter and enter for just default option. </li> 
                           <li>Wait until process finish. Once finish you will get live url yo access it.</li>
                         </ul>
                     </div>
@@ -1426,14 +1444,62 @@ import BatteryStd from '@mui/icons-material/BatteryStd';
                             <thead>
                               <tr>
                                 <th>
-                                    <strong>Version 1.0 – 8 Sept, 2024strong>
+                                    <strong>Version 3.1.0 – 12 Jun, 2024</strong>
                                 </th>
                               </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                   <td>
-                                      Awrora released
+                                    Feature: Create New Layout
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>
+                                    File changes:<br />
+                                    - components/Layouts/*.js<br />
+                                    - pages/[locale]/*.js<br />
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>
+                                    Feature: Client Side Navigation
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>
+                                    File changes:<br />
+                                    - components/Header/*.js<br />
+                                    - components/Header/TopNav/*.js<br />
+                                    - components/Header/SideNav/*.js<br />
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>
+                                    Chore: Upgrader to Next v14
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>
+                                    File changes:<br />
+                                    - packages.json<br />
+                                    - next.config.js<br />
+                                  </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="table table-striped log">
+                            <thead>
+                              <tr>
+                                <th>
+                                    <strong>Version 3.0.0 – 20 Mar, 2024</strong>
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                  <td>
+                                    New Awrora released
                                   </td>
                                 </tr>
                             </tbody>
